@@ -78,6 +78,17 @@ def mul_small(a: list[int], word: int, base: int) -> list[int]:
         result.append(carry)
     return strip(result)
 
+def divmod_small(a: list[int], divisor: int, base: int) -> tuple[list[int], int]:
+    """Делит магнитуду a (лимбы в системе base) на обычное целое divisor.
+    divisor не обязан быть меньше base — здесь нет такого требования."""
+    quotient = [0] * len(a)
+    rem = 0
+    for i in range(len(a) - 1, -1, -1):
+        cur = rem * base + a[i]
+        quotient[i] = cur // divisor
+        rem = cur % divisor
+    return strip(quotient), rem
+
 
 def divmod_mag(a: list[int], b: list[int], base: int) -> tuple[list[int], list[int]]:
     if cmp_mag(b, [0]) == 0:
@@ -111,20 +122,19 @@ def from_decimal_magnitude(digits: str, base: int) -> list[int]:
             cur = limbs[i] * 10 + carry
             limbs[i] = cur % base
             carry = cur // base
-        if carry:
-            limbs.append(carry)
+        while carry:
+            limbs.append(carry % base)
+            carry //= base
     return strip(limbs)
 
 
 def to_decimal_magnitude(limbs: list[int], base: int) -> str:
-    """Лимбы -> строка десятичных цифр, кусками по 9 цифр (10^9 < 2^30)."""
+    """Лимбы -> строка десятичных цифр, через повторное деление на 10."""
     if cmp_mag(limbs, [0]) == 0:
         return "0"
-    chunk = 1_000_000_000
-    chunks = []
+    digits = []
     cur = limbs[:]
     while cmp_mag(cur, [0]) != 0:
-        cur, rem_limbs = divmod_mag(cur, [chunk], base)
-        chunks.append(rem_limbs[0] if rem_limbs else 0)
-    chunks_str = [str(chunks[0])] + [f"{c:09d}" for c in chunks[1:]]
-    return "".join(reversed(chunks_str))
+        cur, rem = divmod_small(cur, 10, base)
+        digits.append(str(rem))
+    return "".join(reversed(digits))

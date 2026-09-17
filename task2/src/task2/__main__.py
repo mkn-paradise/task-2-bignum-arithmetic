@@ -6,7 +6,7 @@ from task2.bignum import BigInt
 
 def main() -> None:
     M = int(input("Введите систему счисления M для длинной арифметики: "))
-    N = int(input("Введите разрядность M-ичной системы счисления: "))
+    N = int(input("Введите разрядность N для M-ичной системы счисления: "))
     a = BigInt.from_str(input("a = "), M, N)
     b = BigInt.from_str(input("b = "), M, N)
     print(f"a + b = {(a + b).to_str()}")
